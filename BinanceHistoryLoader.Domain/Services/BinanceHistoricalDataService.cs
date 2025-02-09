@@ -15,8 +15,12 @@ public class BinanceHistoricalDataService(
     ILogger<BinanceHistoricalDataService> logger,
     ConcurrentDictionary<string, Task> tasksDictionary) : IBinanceHistoricalDataService
 {
-    public string LoadData(List<string> pairs, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
+    public string LoadData(List<string> pairs, DateTime startDate, DateTime endDate,
+        CancellationToken cancellationToken = default)
     {
+        if (pairs.Count == 0) throw new ArgumentException("At least one pair must be provided.");
+        if (startDate > endDate) throw new ArgumentException("End date must be greater than start date.");
+
         var jobId = ObjectId.GenerateNewId();
 
         tasksDictionary[jobId.ToString()] = Task.Run(async () =>

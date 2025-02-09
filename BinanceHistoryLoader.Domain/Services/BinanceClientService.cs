@@ -26,7 +26,8 @@ public class BinanceClientService : IBinanceClientService
         return await MakeRequestAsync<List<AggregateTrade>>(endpoint, cancellationToken);
     }
 
-    private async Task<T> MakeRequestAsync<T>(string endpoint, CancellationToken cancellationToken = default) where T : new()
+    private async Task<T> MakeRequestAsync<T>(string endpoint, CancellationToken cancellationToken = default)
+        where T : new()
     {
         var response = await _httpClient.GetAsync(endpoint, cancellationToken);
         response.EnsureSuccessStatusCode();
