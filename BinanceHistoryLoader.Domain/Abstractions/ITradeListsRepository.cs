@@ -4,5 +4,5 @@ namespace BinanceHistoryLoader.Domain.Abstractions;
 
 public interface ITradeListsRepository
 {
-    Task AddAsync(AggregateTradeList tradeList);
+    Task AddAsync(AggregateTradeList tradeList, CancellationToken cancellationToken = default);
 }
