@@ -21,7 +21,7 @@ public class HistoricalDataController(IBinanceHistoricalDataService binanceHisto
     {
         try
         {
-            return HistoricalStatusView.FromJob(await binanceHistory.CheckStatus(jobId));
+            return HistoricalStatusView.FromJob(await binanceHistory.CheckStatusAsync(jobId));
         }
         catch (KeyNotFoundException e)
         {

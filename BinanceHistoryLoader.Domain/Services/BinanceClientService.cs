@@ -16,25 +16,25 @@ public class BinanceClientService : IBinanceClientService
     }
 
     public async Task<List<AggregateTrade>> GetAggTradesAsync(string symbol, DateTime? startTime = null,
-        DateTime? endTime = null)
+        DateTime? endTime = null, CancellationToken cancellationToken = default)
     {
         var endpoint = $"/api/v3/aggTrades?symbol={symbol}";
         if (startTime.HasValue)
             endpoint += $"&startTime={new DateTimeOffset(startTime.Value).ToUnixTimeMilliseconds()}";
         if (endTime.HasValue) endpoint += $"&endTime={new DateTimeOffset(endTime.Value).ToUnixTimeMilliseconds()}";
 
-        return await MakeRequestAsync<List<AggregateTrade>>(endpoint);
+        return await MakeRequestAsync<List<AggregateTrade>>(endpoint, cancellationToken);
     }
 
-    private async Task<T> MakeRequestAsync<T>(string endpoint) where T : new()
+    private async Task<T> MakeRequestAsync<T>(string endpoint, CancellationToken cancellationToken = default) where T : new()
     {
-        var response = await _httpClient.GetAsync(endpoint);
+        var response = await _httpClient.GetAsync(endpoint, cancellationToken);
         response.EnsureSuccessStatusCode();
         var result = await response.Content.ReadFromJsonAsync<T>(new JsonSerializerOptions
         {
             PropertyNameCaseInsensitive = false,
             PropertyNamingPolicy = null
-        });
+        }, cancellationToken);
 
         if (result == null) throw new ArgumentNullException(nameof(T));
 

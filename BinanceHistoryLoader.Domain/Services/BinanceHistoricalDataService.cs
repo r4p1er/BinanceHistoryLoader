@@ -15,7 +15,7 @@ public class BinanceHistoricalDataService(
     ILogger<BinanceHistoricalDataService> logger,
     ConcurrentDictionary<string, Task> tasksDictionary) : IBinanceHistoricalDataService
 {
-    public string LoadData(List<string> pairs, DateTime startDate, DateTime endDate)
+    public string LoadData(List<string> pairs, DateTime startDate, DateTime endDate, CancellationToken cancellationToken = default)
     {
         var jobId = ObjectId.GenerateNewId();
 
@@ -38,7 +38,7 @@ public class BinanceHistoricalDataService(
                 var tasks = pairs.Select(async pair =>
                 {
                     logger.LogDebug("Retrieving trades for pair {Pair} for Job {JobId}", pair, jobId.ToString());
-                    var trades = await binanceClient.GetAggTradesAsync(pair, startDate, endDate);
+                    var trades = await binanceClient.GetAggTradesAsync(pair, startDate, endDate, cancellationToken);
                     logger.LogDebug("Retrieved {Count} trades for pair {Pair} for Job {JobId}", trades.Count, pair,
                         jobId.ToString());
                     var tradeList = new AggregateTradeList
@@ -50,7 +50,7 @@ public class BinanceHistoricalDataService(
                         Trades = trades,
                         JobId = jobId.ToString()
                     };
-                    await tradeLists.AddAsync(tradeList);
+                    await tradeLists.AddAsync(tradeList, cancellationToken);
                     logger.LogInformation("TradeList for pair {Pair} saved for Job {JobId}", pair,
                         jobId.ToString());
                 });
@@ -58,6 +58,11 @@ public class BinanceHistoricalDataService(
 
                 job.Status = JobStatus.Completed;
                 logger.LogInformation("Job {JobId} completed successfully", jobId.ToString());
+            }
+            catch (OperationCanceledException ex)
+            {
+                job.Status = JobStatus.Failed;
+                logger.LogError(ex, "Job {JobId} processing cancelled", jobId.ToString());
             }
             catch (Exception ex)
             {
@@ -71,12 +76,12 @@ public class BinanceHistoricalDataService(
                 logger.LogInformation("Job {JobId} status updated to {Status} with EndTime {EndTime}", jobId.ToString(),
                     job.Status.ToString(), job.EndTime);
             }
-        });
+        }, cancellationToken);
 
         return jobId.ToString();
     }
 
-    public async Task<Job> CheckStatus(string id)
+    public async Task<Job> CheckStatusAsync(string id)
     {
         if (tasksDictionary.TryGetValue(id, out var task) && task.IsCompleted)
         {
