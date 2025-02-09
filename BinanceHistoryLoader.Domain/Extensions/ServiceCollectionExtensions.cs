@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using BinanceHistoryLoader.Domain.Abstractions;
 using BinanceHistoryLoader.Domain.Entities;
 using BinanceHistoryLoader.Domain.Models;
@@ -18,6 +19,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITradeListsRepository, TradeListsRepository>();
         services.AddScoped<IBinanceClientService, BinanceClientService>();
         services.AddScoped<IBinanceHistoricalDataService, BinanceHistoricalDataService>();
+        services.AddSingleton<ConcurrentDictionary<string, Task>>();
 
         return services;
     }

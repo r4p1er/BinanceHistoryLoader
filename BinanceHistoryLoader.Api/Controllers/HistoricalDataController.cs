@@ -13,7 +13,7 @@ public class HistoricalDataController(IBinanceHistoricalDataService binanceHisto
     {
         var jobId = binanceHistory.LoadData(data.Pairs, data.StartDate, data.EndDate);
 
-        return Ok(new { jobId = jobId });
+        return Ok(new { jobId });
     }
 
     [HttpGet("status")]
